@@ -1,0 +1,12 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# adb / local temp
+*.orig
+*.tmp
+/tmp/
+
+# keep backups/ zip current by hand; ignore duplicates that would bloat the repo
+*.zip
+!backups/*.zip
