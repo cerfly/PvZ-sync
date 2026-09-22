@@ -72,6 +72,7 @@ global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
 |---|---|
 | Game starts a fresh profile after restore | Wrong package / path. Verify `Android/data/com.ea.game.pvz2_na/files/No_Backup/pp.dat` exists after push. |
 | Restored profile loads as empty/fresh (same player ID, 0 coins) | Cloud/Play Games reset it at first boot. Shut network off, restore again, launch once offline, then go online. |
+| "Identity selection / conflict" dialog with two GUID identities, both showing 0 coins | Two anonymous identities exist on the device. Wipe and rebuild to a single identity: `adb shell pm clear com.ea.game.pvz2_na`, push the snapshot again (`import-save.sh`), first launch offline. Decline any "connect to Google Play Games" prompt afterwards. |
 | Game crashes on load | The save is from a newer game version. Update the game first, then retry. |
 | Progress "lost" after linking an account | Unlink / decline cloud sync; restore local save again from this repo. |
 
