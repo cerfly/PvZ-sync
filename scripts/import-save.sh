@@ -12,6 +12,10 @@
 #   IMPORTANT:
 #     - Close the game completely on the device FIRST
 #       (Settings > Apps > com.ea.game.pvz2_na > Force stop).
+#     - CRITICAL: keep the device OFFLINE for the first launch after restore
+#       (airplane mode). Google Play Games / cloud automation resets a fresh
+#       profile to empty if the network is on at first boot.
+#       After the profile has loaded once, re-enable the network.
 #     - The device must run the same region package: com.ea.game.pvz2_na
 #       (advanced/global package com.ea.game.pvz2_row uses a different folder).
 #     - After first launch, do NOT sign into Google Play Games / Game Center

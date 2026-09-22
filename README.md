@@ -3,6 +3,13 @@
 Private git backup of the Plants vs. Zombies 2 profile **"User Dave"** (`profile 1771293681`)
 so it can be restored to any Android device, even without any account / cloud login.
 
+> **Known gotcha (fixed 2026-09-22):** restoring onto a new device requires the
+> **first launch after restore to be OFFLINE** (turn off Wi-Fi / airplane mode).
+> Otherwise Google Play Games / cloud automation on the tablet can reset the
+> fresh profile to empty (it keeps the player ID but zeroes coins/gems/plants).
+> Once the profile has loaded once (even offline), it's established — network can
+> come back and it persists.
+
 ## Why
 
 PvZ 2's entire profile lives in a handful of files under the app's `No_Backup` folder.
@@ -42,11 +49,17 @@ global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
 
 1. Install/update the **PvZ 2 NA** build and launch it once, then **Force-stop** it.
    (Settings > Apps > `com.ea.game.pvz2_na` > Force stop)
-2. `./scripts/import-save.sh`  — it auto-backs up the device's save to
+2. **Turn the device's network OFF** (airplane mode) — the first launch after a
+   restore must be offline, or Google Play Games / cloud automation may reset
+   the fresh profile to empty.
+3. `./scripts/import-save.sh`  — it auto-backs up the device's save to
    `No_Backup.orig` first, so you can roll back:
    `adb shell 'rm -rf <path>/No_Backup; mv <path>/No_Backup.orig <path>/No_Backup'`
-3. Launch the game. You should see "User Dave" with your coins/gems.
-4. **Don't link Google Play Games / Apple / EA accounts afterwards**, or an old
+4. Launch the game (still offline). You should see "User Dave" with your
+   coins/gems.
+5. Close the game, re-enable the network. From now on normal (online) launches
+   keep the local save.
+6. **Don't link Google Play Games / Apple / EA accounts afterwards**, or an old
    cloud profile can overwrite the freshly restored local save.
 
 > Android 11+ hides `Android/data` from most file managers — that's why the
@@ -58,6 +71,7 @@ global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
 | Symptom | Fix |
 |---|---|
 | Game starts a fresh profile after restore | Wrong package / path. Verify `Android/data/com.ea.game.pvz2_na/files/No_Backup/pp.dat` exists after push. |
+| Restored profile loads as empty/fresh (same player ID, 0 coins) | Cloud/Play Games reset it at first boot. Shut network off, restore again, launch once offline, then go online. |
 | Game crashes on load | The save is from a newer game version. Update the game first, then retry. |
 | Progress "lost" after linking an account | Unlink / decline cloud sync; restore local save again from this repo. |
 
