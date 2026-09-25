@@ -1,22 +1,23 @@
-# PvZ 2 — Full transfer procedure (case summary)
+# PvZ 2 — Transfer and same-credential access procedure (case summary)
 
 This document records the evidence, limits, and safe recovery procedure for moving
 **Plants vs. Zombies 2 NA** progress from one Android install to another. It was
 last revalidated on the Android Pad on **2026-09-25**; the APK findings below come
 from the tested NA build **13.4.1 (build 1055)**.
 
-> **Safety rule:** keep the moved-to Pad offline until an account-association plan
-> has been confirmed by EA or Google. Airplane mode alone is not a sufficient
-> offline test. Do not manually link Google Play Games or EA accounts on the Pad
-> during recovery.
+> **Safety rule:** keep the moved-to Pad offline until the exact source
+> credentials/account have been identified and the one-device-at-a-time rule is
+> understood. Airplane mode alone is not a sufficient offline test. Do not
+> manually link Google Play Games or EA accounts on the Pad during recovery.
 
 ---
 
 ## 1. Goal
 
 Preserve the intact PvZ 2 NA profile — player **“User Dave”**, local profile ID
-`1771293681` — and, if EA/Google can establish a supported account association,
-continue the same progress on a second Android device.
+`1771293681` — and use it on a second Android device through the **same account
+credentials**, as directed by EA. This is credential-based access, not a
+device-to-device progress transfer.
 
 The repository is an evidence-preserving local-file backup. It is **not** a copy
 of the account database, the Google Play Games account, or the remote snapshot.
@@ -122,17 +123,32 @@ or EA linking was performed. This proves that an installer-associated Google
 account was being handled automatically, but it does not identify which account
 owns the `PvZ2-1.pvz2` snapshot or prove the exact cloud write event.
 
-### 3.3 Failed or unproven paths
+### 3.3 EA response and failed/unproven paths
 
-- The GUI account/cloud icon was not a reliable way to identify or migrate the
-  profile; no supported association has been completed.
+EA replied:
+
+> “Please be advised that in-game progress cannot be transferred between mobile
+> devices. To access your data, you must use the same credentials on the
+> secondary device. Please note that the account is intended to be active on
+> only one device at a time.”
+
+This confirms EA's supported policy: there is no manual device-to-device
+progress transfer; the secondary device must use the same credentials, and the
+account is intended to run on only one device at a time. The reply does **not**
+identify whether the source profile is attached to a Google Play Games account,
+an EA account, or both. It also does not identify which credentials are required
+for this particular profile.
+
+- The GUI account/cloud icon was not a reliable way to identify or access the
+  profile; the exact account association has not been established.
 - The observed GUID `F9AD327B-E0B3-4244-8A9F-5D1549C8C194` occurs in active and
   daily quest RTON data. Its identity role is **unverified**. It must not be
   described as an EA GIN or used as the sole proof of ownership.
 - The log also contains analytics/lifecycle identifiers. They are not the local
   profile ID and should not be submitted as player identity evidence.
-- Direct EA/CDN reachability and an EA account migration endpoint were not
-  established. A VPN is not a solution to the account association problem.
+- Direct EA/CDN reachability and a separate EA account-migration endpoint were
+  not established. EA's stated path is same-credential access, not a migration;
+  a VPN is not a solution to the account-association problem.
 
 ---
 
@@ -145,56 +161,61 @@ owns the `PvZ2-1.pvz2` snapshot or prove the exact cloud write event.
 | `pp.dat` reference | 15,517 bytes; SHA-256 `c5486184205c7d952d77c83d32d742424e11711f5e41ddf818e8f6dcfc95ae5b`. |
 | Online Pad startup | Profile collapse was observed on direct Wi-Fi. Play Games Snapshots is implicated by the APK and logs; the exact remote payload is unproven. |
 | Remote snapshot owner | Unknown. `PvZ2-1.pvz2` is the fixed key, not an account ID. |
-| EA/Google migration | No server-side association or migration has been completed. |
+| EA guidance | EA says progress cannot be transferred between devices; use the same credentials on the secondary device, with only one device active at a time. |
+| Account migration | No device-to-device migration or account association has been completed. The exact source credentials still need to be identified. |
 | Last known safe action | Keep the Pad offline and force-stopped; restore from the repository before any further test. |
 
-Bottom line: the local save is reproducible and protected. The remaining issue
-is account/cloud association, not a missing or corrupt `pp.dat`. Do not treat a
-successful offline load as permission to go online.
+Bottom line: the local save is reproducible and protected. EA's stated path is
+same-credential access with one active device at a time, not a file transfer or
+a server-side migration. The exact source credentials still need to be
+identified; do not treat a successful offline load as permission to go online.
 
 ---
 
 ## 5. Safe next steps
 
-### A. Ask EA/Google for an official association (recommended)
+### A. Identify the credentials required for same-account access (recommended)
 
-Open a support case and ask whether EA can:
+EA has ruled out a device-to-device transfer. The next question is not “how do we
+copy the save?” but “which exact credentials does this profile use?” Ask EA to
+confirm whether the required credentials are:
 
-- identify the online player record associated with the source account;
-- associate that record with an EA account or a different Google Play Games
-  account; and
-- migrate or restore the progress for the NA Android package.
+- the Google Play Games account used on the source phone;
+- an EA email/account; or
+- both.
 
-Provide screenshots, package/version, the local profile ID, the source account
-email, and the exact progression. Describe `1771293681` as a **local profile ID**,
-not as a guaranteed EA/Play Games identifier. Mention the fixed snapshot name
-`PvZ2-1.pvz2` as diagnostic information, but do not claim that Google or EA can
-read it without their own tools. Do not present `F9AD...` as a verified GIN.
+Ask EA how the existing profile can be verified against the local ID
+`1771293681`, and whether the same-credential sign-in will load the existing
+progress on the secondary device. Do not claim that the local ID is an EA GIN,
+and do not present `F9AD...` as a verified identity.
 
-A prepared, deliberately qualified ticket is in
+A concise follow-up ticket is in
 [`docs/ea-support-email-template.md`](ea-support-email-template.md).
 
 ### B. Identify the source cloud account without changing the source save
 
-On the source device/account, determine which Google account is associated with
-PvZ 2 and which account, if any, owns its Play Games snapshot. Record that
-information without deleting snapshots, unlinking accounts, or reinstalling the
-game. The Pad must remain offline during this investigation.
+On the source device/account, determine which Google account and/or EA account is
+associated with PvZ 2, and which account, if any, owns its Play Games snapshot.
+Record that information without deleting snapshots, unlinking accounts, or
+reinstalling the game. The Pad must remain offline during this investigation.
 
-### C. Controlled online test — future, explicit approval only
+### C. Controlled same-credential activation — future, explicit approval only
 
 Do not run another online launch merely to test the Pad. If the user explicitly
-approves a later experiment, first:
+approves a later sign-in test, first:
 
-1. force-stop PvZ 2 and take a fresh backup of the known-good repository state;
-2. disable Wi-Fi, mobile data, and VPN;
-3. arrange a genuinely Play-Games-isolated test environment (or a demonstrably
-   account-free environment) rather than merely changing a local setting;
-4. enable a watchdog that force-stops the game and restores the snapshot on any
-   unexpected profile change; and
-5. capture logs and snapshot metadata without exposing account tokens.
+1. identify the exact source credentials and confirm the source phone will be
+   force-stopped and offline before the secondary device is used;
+2. take a fresh backup of the known-good repository state and keep the Pad's
+   local snapshot recoverable;
+3. enable a watchdog that force-stops the game and restores the snapshot on any
+   unexpected profile change;
+4. sign in on the secondary device using only the same credentials, with the
+   source device inactive; and
+5. capture the result and redacted logs without exposing account tokens.
 
-This test is diagnostic only. It is not a migration procedure.
+This is an account-activation test, not a migration. Do not clear the restored
+local files or unlink any account unless EA gives an explicit procedure.
 
 ---
 
@@ -226,4 +247,5 @@ remote Play Games snapshot.
 The one rule that has not failed:
 
 > **First boot after any restore = genuinely offline. Keep the moved device
-> offline until an account-association solution is independently verified.**
+> offline until the exact source credentials are identified; never keep both
+> devices active with the same account.**

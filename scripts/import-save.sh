@@ -20,8 +20,9 @@
 #       keep the moved device offline afterward.
 #     - The device must run the same region package: com.ea.game.pvz2_na
 #       (advanced/global package com.ea.game.pvz2_row uses a different folder).
-#     - After first launch, do NOT sign into Google Play Games / Game Center
-#       with an old cloud profile — it can overwrite the local save.
+#     - After first launch, do not sign in unless EA has identified the exact
+#       same credentials for this profile. Keep the source device inactive;
+#       the account is intended to be active on only one device at a time.
 #
 set -euo pipefail
 

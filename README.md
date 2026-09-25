@@ -18,7 +18,19 @@ Games player association, or a remote cloud snapshot.
 > `SignInPerformer` / `CloudSilentSync` activity; no manual account linking was
 > performed. The Pad had already selected an installer-associated account. Do
 > not reconnect the moved-to device or link an old cloud profile unless a
-> watchdog and a verified account-association plan are in place.
+> same-credential procedure and one-device-at-a-time plan are in place.
+
+## EA's current guidance
+
+EA replied that PvZ2 progress cannot be transferred between mobile devices. To
+access the data on a secondary device, use the **same credentials**; the account
+is intended to be active on only one device at a time. This is not a promise
+that the local file copy is an official transfer method, and it does not yet
+identify whether this profile uses a Google Play Games account, an EA account,
+or both.
+
+Keep the source phone inactive/offline before any approved secondary-device
+sign-in. Do not use both devices online with the same account.
 
 ## Why this is separate from cloud identity
 
@@ -86,8 +98,9 @@ snapshot or prove which account owns the source cloud state.
 5. Keep the moved device offline while using the restored local profile. Do not
    manually link Google Play Games, EA, or another old cloud account.
 6. If an online launch is ever attempted, only do so with explicit approval,
-   a fresh backup, and a watchdog that force-stops and restores the game when
-   the profile changes.
+   the same credentials identified by EA, the source device inactive, a fresh
+   backup, and a watchdog that force-stops and restores the game when the
+   profile changes.
 
 `import-save.sh` does not access app-private identity state and does not alter a
 remote snapshot. The verified local reference `pp.dat` is 15,517 bytes with
@@ -117,7 +130,8 @@ player ID or an EA server identifier. The value
 role is unverified; do not label it a GIN or rely on it alone for support.
 
 When contacting EA or Google, provide the local ID, screenshots, package/version,
-the source account email, and the exact progression. Ask which identifier their
-service recognizes and whether an official account association or migration is
-possible. The qualified template is in
+the source account email, and the exact progression. Ask which credentials their
+service recognizes and how to activate the existing profile on one secondary
+device; EA has said that device-to-device progress transfer is not supported.
+The qualified template is in
 [`docs/ea-support-email-template.md`](docs/ea-support-email-template.md).

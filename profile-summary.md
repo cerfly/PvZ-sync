@@ -14,7 +14,7 @@ It was decoded from `No_Backup/` on 2026-09-22 and revalidated on the Pad on
 | Game data version | CDN push 13.4.1 (`CDN.13.4`) | Observed in the snapshot |
 | Serialized save UID | `1.0.69541402` | Value in the RTON save; not independently verified as an account identifier |
 | Last source save write | 2026-09-22 (approx. 13:29) | Approximate local observation |
-| Account association | Not established by this repository | The source device was observed online, but the cloud/account relationship was not identified |
+| Account association | Not established by this repository | EA says to use the same credentials on a secondary device; the exact source credentials are still unknown |
 
 `1771293681` is useful for matching the local files and for support context. It
 must not be described as a universal login, Google Play Games player ID, or
@@ -75,6 +75,14 @@ write and commit a snapshot. This makes Play Games Snapshots a supported
 technical explanation for the observed online collapse, but the remote payload
 and account owner were not recovered. The snapshot key is not derived from
 `1771293681`.
+
+### EA guidance
+
+EA has stated that in-game progress cannot be transferred between mobile
+devices. The same credentials must be used on the secondary device, and the
+account is intended to be active on only one device at a time. This confirms a
+same-credential access model; it does not identify whether the source profile is
+attached to a Google Play Games account, an EA account, or both.
 
 The following identifiers must not be conflated:
 
