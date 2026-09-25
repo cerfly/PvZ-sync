@@ -1,92 +1,123 @@
 # PvZ 2 Save Sync
 
-Private git backup of the Plants vs. Zombies 2 profile **"User Dave"** (`profile 1771293681`)
-so it can be restored to any Android device, even without any account / cloud login.
+Private, evidence-preserving backup of the local Plants vs. Zombies 2 NA profile
+**“User Dave”** (local profile ID `1771293681`). It can be restored to another
+Android install for **offline** use, subject to using the matching NA package.
+The repository does not contain or transfer a Google/EA account, a Google Play
+Games player association, or a remote cloud snapshot.
 
-> **Known gotcha (revalidated 2026-09-25):** restoring onto a new device requires the
-> **first launch after restore to be genuinely OFFLINE**. On this Pad,
-> `airplane_mode_on=1` was reported while Wi-Fi and the Clash VPN were still active.
-> A true offline check requires disabling Wi-Fi and mobile data, stopping the VPN,
-> and confirming `wlan0` is down and no `tun0`/active network exists. The full
-> **User Dave** profile then loaded and remained stable for at least 90 seconds.
-> A later direct-Wi-Fi launch (without Clash) collapsed the profile within 8
-> seconds; logcat showed Google Play Games `SignInPerformer` / `CloudSilentSync`
-> activity. No manual account linking was performed, but the Pad's Play Games
-> stack was already handling an installer-selected account. Do not reconnect the
-> moved-to device to the network or link an old cloud profile unless you are
-> prepared to restore the save again.
+> **Critical finding (revalidated 2026-09-25):** a restored profile must be
+> launched with the device genuinely offline. On the tested Pad,
+> `airplane_mode_on=1` was reported while Wi-Fi and a VPN were still active.
+> Disable Wi-Fi and mobile data, stop the VPN, and confirm that `wlan0` is down
+> and no active network remains. The full **User Dave** profile then loaded and
+> remained stable for at least 90 seconds.
+>
+> A later direct-Wi-Fi startup, without the VPN, caused the profile to collapse
+> within about eight seconds. Logcat showed automatic Google Play Games
+> `SignInPerformer` / `CloudSilentSync` activity; no manual account linking was
+> performed. The Pad had already selected an installer-associated account. Do
+> not reconnect the moved-to device or link an old cloud profile unless a
+> watchdog and a verified account-association plan are in place.
 
-## Why
+## Why this is separate from cloud identity
 
-PvZ 2's entire profile lives in a handful of files under the app's `No_Backup` folder.
-When there's no EA / Google / Apple account, official cloud save isn't available —
-but the save files themselves can be copied by hand or with the scripts in `scripts/`.
+The tested NA APK (13.4.1, build 1055) starts a Google Play Games snapshot sync
+path after sign-in. Static analysis shows that the app opens the fixed snapshot
+name **`PvZ2-1.pvz2`**, reads a successful result into the game, and commits
+snapshots when saving. That is the strongest supported explanation for the
+online collapse, but the exact remote payload and owning Google account were
+not recovered. The snapshot name is not keyed by `1771293681`.
+
+The local files and cloud state are therefore separate layers. A file restore
+can make the profile appear correctly while leaving the device attached to a
+different cloud/player association. The GUID found in quest data is unverified
+and is not documented here as an EA GIN.
+
+See [`docs/transfer-procedure.md`](docs/transfer-procedure.md) for the full
+evidence and confidence limits.
 
 ## Layout
 
-```
-saves/com.ea.game.pvz2_na/files/No_Backup/   <- the actual save snapshot
-scripts/export-save.sh                       <- adb: phone  -> repo
-scripts/import-save.sh                       <- adb: repo   -> phone
-backups/                                     <- extra zipped copy
-profile-summary.md                           <- decoded profile stats
+```text
+saves/com.ea.game.pvz2_na/files/No_Backup/   verified local save snapshot
+scripts/export-save.sh                      adb: phone  -> repo
+scripts/import-save.sh                      adb: repo   -> phone
+backups/                                    recovery archive
+profile-summary.md                          decoded local profile details
+docs/transfer-procedure.md                  diagnosis and controlled procedure
+docs/ea-support-email-template.md           qualified support request
 ```
 
-Only the essential files are tracked (`pp.dat`, snapshots, local_profiles,
-global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
-`cache/`, and the 42 MB `CDN.13.4/` config tree) is excluded — the game re-downloads it.
+Only essential local files are tracked (`pp.dat`, snapshots, `local_profiles`,
+`global_save_data` and its hash, draper/loot data, and quest folders). Junk such
+as ad-SDK `mb/`, `cache/`, and the large `CDN.13.4/` resource tree is excluded;
+the game can re-download resources when a supported network is available.
 
 ## Requirements
 
 - `git`
-- `adb` (Android platform-tools) — only needed for the scripts
-- The game package **must match**: this profile is from `com.ea.game.pvz2_na`
-  (North-America build). A device running `com.ea.game.pvz2_row` or a Chinese
-  build stores files under a different folder and won't read this save.
+- `adb` (Android platform-tools) for the scripts
+- The game package must match: `com.ea.game.pvz2_na` (North America). The
+  `com.ea.game.pvz2_row`/other regional package may use a different path and is
+  not interchangeable with this snapshot.
 
-## Backup from your phone
+## Backup from the source device
 
-1. Close PvZ 2 completely on the phone (or Force-stop).
-2. `./scripts/export-save.sh`   (add a serial if `adb devices` shows several)
-3. Review changes, then
-   `git add saves && git commit -m 'Sync YYYY-MM-DD' && git push`
+1. Close PvZ 2 completely on the source phone (or use **Force stop**).
+2. Run `./scripts/export-save.sh` (add a serial if `adb devices` lists several).
+3. Review the changes, then commit and push the save.
 
-## Restore to a tablet / new phone
+This exports local game files only. It does not export the Google Play Games
+snapshot or prove which account owns the source cloud state.
 
-1. Install/update the **PvZ 2 NA** build and launch it once, then **Force-stop** it.
-   (Settings > Apps > `com.ea.game.pvz2_na` > Force stop)
-2. **Turn the device's network genuinely OFF** — disable Wi-Fi and mobile data,
-   stop the VPN, and verify there is no active network. Airplane-mode setting
-   alone was not sufficient on the tested Pad. The first launch after a restore
-   must be offline, or Google Play Games / cloud automation may reset the
-   fresh profile to empty.
-3. `./scripts/import-save.sh`  — it auto-backs up the device's save to
-   `No_Backup.orig` first, so you can roll back:
-   `adb shell 'rm -rf <path>/No_Backup; mv <path>/No_Backup.orig <path>/No_Backup'`
-4. Launch the game (still offline). You should see "User Dave" with your
-   coins/gems. Keep the device offline while using the moved profile.
-5. Do not reconnect the moved-to device to the network. The original device may
-   continue playing online, but a different install has a separate cloud/player
-   identity and can overwrite the restored local save.
-6. **Don't link Google Play Games / Apple / EA accounts on the moved device**;
-   an old cloud profile can overwrite the freshly restored local save.
+## Restore to a tablet or new phone
 
-> Android 11+ hides `Android/data` from most file managers — that's why the
-> scripts use adb (shell can always write there). If you can't use adb, a
-> desktop tool such as ZArchiver or a PC + USB (MTP) also works.
+1. Install/update the **PvZ 2 NA** build and launch it once so it creates the
+   save directory, then **Force stop** it.
+2. Turn networking genuinely off: disable Wi-Fi and mobile data, stop the VPN,
+   and verify there is no active network. Airplane mode alone is insufficient.
+3. Run `./scripts/import-save.sh`. It first copies the current device save to
+   `No_Backup.orig`, replaces the destination contents so stale files cannot
+   survive, and then pushes the repository snapshot into the clean directory.
+   If the push fails, the script attempts to roll back automatically.
+4. Launch the game while still offline. Verify **User Dave**, the expected
+   progression, and `pp.dat` before doing anything else.
+5. Keep the moved device offline while using the restored local profile. Do not
+   manually link Google Play Games, EA, or another old cloud account.
+6. If an online launch is ever attempted, only do so with explicit approval,
+   a fresh backup, and a watchdog that force-stops and restores the game when
+   the profile changes.
+
+`import-save.sh` does not access app-private identity state and does not alter a
+remote snapshot. The verified local reference `pp.dat` is 15,517 bytes with
+SHA-256:
+
+```text
+c5486184205c7d952d77c83d32d742424e11711f5e41ddf818e8f6dcfc95ae5b
+```
 
 ## Troubleshooting
 
-| Symptom | Fix |
+| Symptom | Safe response |
 |---|---|
-| Game starts a fresh profile after restore | Wrong package / path. Verify `Android/data/com.ea.game.pvz2_na/files/No_Backup/pp.dat` exists after push. |
-| Restored profile loads as empty/fresh (same player ID, 0 coins) | A network path was still active. Hard-disable Wi-Fi/mobile data and the VPN, restore again, and keep the moved device offline. Do not go online on the moved device. |
-| "Identity selection / conflict" dialog with two GUID identities, both showing 0 coins | Two anonymous identities exist on the device. Wipe and rebuild to a single identity: `adb shell pm clear com.ea.game.pvz2_na`, push the snapshot again (`import-save.sh`), first launch offline. Decline any "connect to Google Play Games" prompt afterwards. |
-| Profile resets to 0 coins/gems on an online boot on a *different* device | **Fundamental per-install identity limitation, not fixable by files.** In the guarded test, direct Wi-Fi (no VPN) caused the file to collapse within 8 seconds; logcat showed Google Play Games `SignInPerformer` / `CloudSilentSync`. The source phone's online identity is not the same as the Pad's anonymous install. First boot genuinely offline holds (verified ≥90s); keep the moved device offline. Play online on the original device, or pursue EA account linking. |
-| Game crashes on load | The save is from a newer game version. Update the game first, then retry. |
-| Progress "lost" after linking an account | Unlink / decline cloud sync; restore local save again from this repo. |
+| Game starts a fresh profile after restore | Verify the package is `com.ea.game.pvz2_na`, the path is `Android/data/com.ea.game.pvz2_na/files/No_Backup`, and `pp.dat` exists. Restore again offline. |
+| Restored profile is empty or shows 0 coins/gems | Treat it as a possible cloud/snapshot overwrite. Force-stop immediately, keep networking disabled, restore the repository snapshot, and verify the visible profile before any network test. |
+| Identity-selection or GUID conflict | Do not experiment with linked accounts on the Pad. Keep it offline and preserve the source files while support identifies the relevant account. |
+| Profile collapses on an online boot | This was reproduced on direct Wi-Fi. Static APK analysis implicates Play Games Snapshots (`PvZ2-1.pvz2`), but the exact remote payload is unknown. Restore and remain offline. |
+| Progress appears lost after account linking | Do not repeatedly relaunch. Force-stop, disable networking, restore the local snapshot, and contact support with the account relationship documented. |
+| Game crashes while loading | Confirm the NA package and compatible game version before changing the save. Do not reinstall as the first recovery step. |
 
-## Player ID
+## Identity information
 
-If anything goes wrong and you need EA support to recover the profile, quote
-player / profile ID **1771293681**.
+`1771293681` is the **local profile ID** observed in the saved profile and
+profile-specific filenames. It is not guaranteed to be a Google Play Games
+player ID or an EA server identifier. The value
+`F9AD327B-E0B3-4244-8A9F-5D1549C8C194` was found in quest RTON data, but its
+role is unverified; do not label it a GIN or rely on it alone for support.
+
+When contacting EA or Google, provide the local ID, screenshots, package/version,
+the source account email, and the exact progression. Ask which identifier their
+service recognizes and whether an official account association or migration is
+possible. The qualified template is in
+[`docs/ea-support-email-template.md`](docs/ea-support-email-template.md).

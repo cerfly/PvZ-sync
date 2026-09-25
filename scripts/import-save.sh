@@ -7,7 +7,8 @@
 #   Requires adb. Steps performed:
 #     1. Checks the device / package path.
 #     2. Backs up the device's current No_Backup to No_Backup.orig
-#     3. Pushes the repo's snapshot over it.
+#     3. Replaces the destination contents (so stale files cannot survive)
+#     4. Pushes the repo's snapshot into the clean directory.
 #
 #   IMPORTANT:
 #     - Close the game completely on the device FIRST
@@ -56,9 +57,17 @@ fi
 echo "==> Backing up current device save to No_Backup.orig"
 "${ADB[@]}" shell "rm -rf '$DEST.orig' && cp -r '$DEST' '$DEST.orig'"
 
+echo "==> Clearing destination contents (prevents stale files surviving the push)"
+"${ADB[@]}" shell "rm -rf '$DEST' && mkdir -p '$DEST'"
+
 echo "==> Pushing repo snapshot (${SRC})"
-"${ADB[@]}" push "$SRC/." "$DEST/"
+if ! "${ADB[@]}" push "$SRC/." "$DEST/"; then
+  echo "Push failed; attempting to roll back to No_Backup.orig" >&2
+  "${ADB[@]}" shell "rm -rf '$DEST' && mv '$DEST.orig' '$DEST'" || true
+  exit 1
+fi
 
 echo "==> Done. Launch PvZ 2; you should see the restored profile."
 echo "    Keep the device genuinely offline before and after this first launch."
+echo "    Verify the name, progression, and pp.dat before doing anything else."
 echo "    Rollback: adb shell 'rm -rf '$DEST'; mv '$DEST.orig' '$DEST''"
