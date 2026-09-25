@@ -16,8 +16,8 @@
 #     - CRITICAL: keep the device GENUINELY OFFLINE for the first launch after
 #       restore. Disable Wi-Fi and mobile data, stop the VPN, and verify that
 #       no active network remains; airplane-mode setting alone is insufficient.
-#       Google Play Games / cloud automation resets a fresh profile to empty if
-#       the network is on at first boot. Keep the moved device offline afterward.
+#       A reachable Google Play Games/cloud sync path can replace local state;
+#       keep the moved device offline afterward.
 #     - The device must run the same region package: com.ea.game.pvz2_na
 #       (advanced/global package com.ea.game.pvz2_row uses a different folder).
 #     - After first launch, do NOT sign into Google Play Games / Game Center
