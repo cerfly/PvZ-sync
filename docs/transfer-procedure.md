@@ -1,7 +1,8 @@
 # PvZ 2 — Full transfer procedure (case summary)
 
 One place that says what this repo *is*, *why it exists*, *what happened*, and
-*what the end state is*. Written 2026-09-23, after the whole cross-device saga.
+*what the end state is*. Written 2026-09-23; revalidated on the Android Pad on
+2026-09-25.
 
 ---
 
@@ -23,7 +24,7 @@ PvZ 2 on Android stores the entire profile inside the app's private
 
 ```
 /sdcard/Android/data/com.ea.game.pvz2_na/files/No_Backup/
-  ├─ pp.dat              (main profile, RTON)   ← 15,912 B, intact
+  ├─ pp.dat              (main profile, RTON)   ← 15,517 B, intact
   ├─ snapshot1/2.dat     (rolling profile snapshots)
   ├─ local_profiles      (purchase / local-use data)
   ├─ activequests/ , dailyquests/ , loot* , draper_*
@@ -36,7 +37,8 @@ available, but it is keyed to:
 - an **anonymous per-install identity** (GIN, an install-scoped GUID)
   registered with EA's servers, **not** to a file;
 - **Google Play Games / EA account** linking — which is *not currently reachable*
-  from China without a routed VPN.
+  from China without a routed VPN. The direct-Wi-Fi test nevertheless reached
+  enough of the Google Play Games sync path to trigger the overwrite.
 
 The transfer is therefore a **file-copy + identity-management problem**, not a
 "log in and it follows you" problem.
@@ -48,10 +50,11 @@ The transfer is therefore a **file-copy + identity-management problem**, not a
 1. **Direct file copy** phone → repo → tablet.
    ✓ Profile restored and intact. Offline boots stable indefinitely.
 2. **Identity conflict** (two anonymous identities on tablet).
-   Resolved by `pm clear` + full re-restore. Profile survived (verified 15,912 B).
+   Resolved by `pm clear` + full re-restore. Profile survived (verified 15,517 B).
 3. **Online test boots** on tablet.
-   ✗ Cloud sync pulls the *empty* server profile for a fresh identity and
-   **zeroes** the local save within ~20–24 s of going online.
+   ✗ Cloud/Play Games sync pulls the *empty* server profile for a fresh identity
+   and **zeroes** the local save. The 2026-09-25 direct-Wi-Fi test observed the
+   collapse within 8 seconds, even without Clash/VPN.
    → Profile restored from repo every time (never lost; triple-backed-up).
 4. **Cloud / EA linking icon**.
    The icon appears only in the fresh, never-registered state. On the already-online
@@ -59,28 +62,40 @@ The transfer is therefore a **file-copy + identity-management problem**, not a
    anonymously). No EA-account route exists in build 1055 without surfacing the UI.
 5. **Resource / patch download "could not find resources".**
    After the final `pm clear`, the game's private resource-DB (verifying the 930 MB
-   OBB) is gone. Cleaning it wants ONE online check against EA's CDN, which the
-   tablet cannot reach directly (0 % packet loss, EA unreachable from CN without
-   Clash VPN). EA's IP range is geo-blocked in this network; only the VPN tunnel
-   reaches it — and that same tunnel is what triggers the cloud zeroing.
+   OBB) is gone. Cleaning it wants one online check against EA's CDN, which the
+   tablet cannot reach directly from this network. Clash can reach the CDN, but it
+   is not required to trigger the profile overwrite.
+6. **Revalidation on the Android Pad (2026-09-25).**
+   The first apparent offline launch was not actually offline: Android reported
+   `airplane_mode_on=1`, but Wi-Fi and Clash's `tun0` VPN were still active. After
+   force-stopping Clash, disabling Wi-Fi and mobile data, and confirming that
+   `wlan0` was down and ping reported `Network is unreachable`, the repository save
+   loaded as full **User Dave** and stayed intact for at least 90 seconds.
+   A guarded launch using direct Wi-Fi with **no VPN** then collapsed the profile
+   within 8 seconds. The logcat capture showed Google Play Games
+   `SignInPerformer` and `CloudSilentSync`; no manual account linking was done,
+   but the Pad's Play Games stack was already handling an installer-selected
+   account. The watchdog force-stopped the game, disabled networking, and
+   restored the exact 15,517-byte snapshot.
 
 ---
 
-## 4. Current verified state (2026-09-23)
+## 4. Current verified state (2026-09-25)
 
 | Item | Status |
 |---|---|
 | Phone (online device) | Anonymous online identity **intact & fully working** — plays online, keeps progress |
-| Tablet | Fresh unregistered identity + **full intact profile (15,912 B)** restored; stable offline |
+| Tablet | Fresh unregistered identity + **full intact profile (15,517 B)** restored; stable offline |
 | Profile safety | Triple backup: repo, local snapshot, `backups/` zip — any partial/bad write rolls back instantly |
-| Cloud zeroing | Preventable: watchdog force-stops before shrink; auto-restore from repo |
-| EA online reachability (tablet → EA) | Unreachable directly; reachable only via Clash VPN tunnel |
+| Cloud zeroing | Confirmed on direct Wi-Fi without a VPN: profile collapsed in 8s; watchdog force-stopped and auto-restored from repo |
+| EA online reachability (tablet → EA) | Unreachable directly; reachable only via Clash VPN tunnel. Direct Wi-Fi is nevertheless sufficient for the Play Games/cloud overwrite path. |
 | Cloud/Sync icon | Hidden while profile is anonymous-online; appears only in fresh-unlinked state |
 
 Bottom line: the save itself is **100 % safe and reproducible**. The remaining
-blocker is **not a file problem** — it is that an anonymous identity that has
-*already* contacted EA gets an empty server profile back on other devices, and
-getting past the resource banner needs one guarded online (VPN) session.
+blocker is **not a file problem** — it is the per-install identity/cloud-sync
+boundary. A moved-to device can play the full profile offline, but any reachable
+network sync path can replace it with the moved install's empty profile. Keep the
+Pad offline unless EA account linking is resolved.
 
 ---
 
@@ -98,16 +113,16 @@ makes the same save playable online on the tablet.
 - Attach proof (profile overview + coin/gem counts) and the GIN so they can
   verify rather than reply "we can't find anonymous accounts".
 
-### B. Guarded in-game online test (risky but recoverable)
+### B. Guarded in-game online test (completed; recoverable but not a solution)
 
-Enable the VPN tunnel once with the watchdog active: the game finishes its
-resource verify, and (with a fresh never-registered identity) the first online
-contact *may upload* the full local profile instead of pulling empty — that would
-make the fresh identity playable online permanently.
+The guarded test was run on 2026-09-25. With direct Wi-Fi and no VPN, the
+Play Games/cloud path still replaced the restored profile within 8 seconds.
+The watchdog force-stopped PvZ 2 and restored the repository snapshot, so the
+save remained safe; however, the test disproved the idea that a VPN might make
+the Pad adopt the source phone's online identity.
 
-- Profile stays safe: watchdog force-stops at the first sign of shrink, and
-  restore-from-repo runs automatically.
-- This is a real decision for you — nothing runs until you say go.
+- Do not repeat this test merely to make the Pad online.
+- Keep the Pad offline, or pursue EA support-assisted account linking first.
 
 ---
 
@@ -142,5 +157,6 @@ make the fresh identity playable online permanently.
 # (backup of last good state lives in backups/)
 ```
 
-> The one rule that has never failed: **first boot after any restore = offline.**
-> After the profile has loaded once, network can come back and it persists.
+> The one rule that has never failed: **first boot after any restore = genuinely offline.**
+> After the profile has loaded once, keep the moved device offline; a reachable
+> network sync path can still overwrite it.

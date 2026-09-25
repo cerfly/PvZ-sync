@@ -3,12 +3,18 @@
 Private git backup of the Plants vs. Zombies 2 profile **"User Dave"** (`profile 1771293681`)
 so it can be restored to any Android device, even without any account / cloud login.
 
-> **Known gotcha (fixed 2026-09-22):** restoring onto a new device requires the
-> **first launch after restore to be OFFLINE** (turn off Wi-Fi / airplane mode).
-> Otherwise Google Play Games / cloud automation on the tablet can reset the
-> fresh profile to empty (it keeps the player ID but zeroes coins/gems/plants).
-> Once the profile has loaded once (even offline), it's established — network can
-> come back and it persists.
+> **Known gotcha (revalidated 2026-09-25):** restoring onto a new device requires the
+> **first launch after restore to be genuinely OFFLINE**. On this Pad,
+> `airplane_mode_on=1` was reported while Wi-Fi and the Clash VPN were still active.
+> A true offline check requires disabling Wi-Fi and mobile data, stopping the VPN,
+> and confirming `wlan0` is down and no `tun0`/active network exists. The full
+> **User Dave** profile then loaded and remained stable for at least 90 seconds.
+> A later direct-Wi-Fi launch (without Clash) collapsed the profile within 8
+> seconds; logcat showed Google Play Games `SignInPerformer` / `CloudSilentSync`
+> activity. No manual account linking was performed, but the Pad's Play Games
+> stack was already handling an installer-selected account. Do not reconnect the
+> moved-to device to the network or link an old cloud profile unless you are
+> prepared to restore the save again.
 
 ## Why
 
@@ -49,18 +55,21 @@ global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
 
 1. Install/update the **PvZ 2 NA** build and launch it once, then **Force-stop** it.
    (Settings > Apps > `com.ea.game.pvz2_na` > Force stop)
-2. **Turn the device's network OFF** (airplane mode) — the first launch after a
-   restore must be offline, or Google Play Games / cloud automation may reset
-   the fresh profile to empty.
+2. **Turn the device's network genuinely OFF** — disable Wi-Fi and mobile data,
+   stop the VPN, and verify there is no active network. Airplane-mode setting
+   alone was not sufficient on the tested Pad. The first launch after a restore
+   must be offline, or Google Play Games / cloud automation may reset the
+   fresh profile to empty.
 3. `./scripts/import-save.sh`  — it auto-backs up the device's save to
    `No_Backup.orig` first, so you can roll back:
    `adb shell 'rm -rf <path>/No_Backup; mv <path>/No_Backup.orig <path>/No_Backup'`
 4. Launch the game (still offline). You should see "User Dave" with your
-   coins/gems.
-5. Close the game, re-enable the network. From now on normal (online) launches
-   keep the local save.
-6. **Don't link Google Play Games / Apple / EA accounts afterwards**, or an old
-   cloud profile can overwrite the freshly restored local save.
+   coins/gems. Keep the device offline while using the moved profile.
+5. Do not reconnect the moved-to device to the network. The original device may
+   continue playing online, but a different install has a separate cloud/player
+   identity and can overwrite the restored local save.
+6. **Don't link Google Play Games / Apple / EA accounts on the moved device**;
+   an old cloud profile can overwrite the freshly restored local save.
 
 > Android 11+ hides `Android/data` from most file managers — that's why the
 > scripts use adb (shell can always write there). If you can't use adb, a
@@ -71,9 +80,9 @@ global_save_data + hash, draper/loot, quest folders). Junk (ad SDK `mb/`,
 | Symptom | Fix |
 |---|---|
 | Game starts a fresh profile after restore | Wrong package / path. Verify `Android/data/com.ea.game.pvz2_na/files/No_Backup/pp.dat` exists after push. |
-| Restored profile loads as empty/fresh (same player ID, 0 coins) | Cloud/Play Games reset it at first boot. Shut network off, restore again, launch once offline, then go online. |
+| Restored profile loads as empty/fresh (same player ID, 0 coins) | A network path was still active. Hard-disable Wi-Fi/mobile data and the VPN, restore again, and keep the moved device offline. Do not go online on the moved device. |
 | "Identity selection / conflict" dialog with two GUID identities, both showing 0 coins | Two anonymous identities exist on the device. Wipe and rebuild to a single identity: `adb shell pm clear com.ea.game.pvz2_na`, push the snapshot again (`import-save.sh`), first launch offline. Decline any "connect to Google Play Games" prompt afterwards. |
-| Profile resets to 0 coins/gems ~20s into any **online** boot on a *different* device | **Fundamental EA-server limitation, not fixable by files.** Online progress is keyed to a per-install anonymous GUID stored in the app's private storage (`/data/data/...`, not in `No_Backup`). The source phone's GUID is recognized by EA; any other device generates a fresh GUID and gets an empty server profile back on first sync. First boot offline always holds (proven ≥90s). Play offline on the moved-to device, or play the online-only modes (Arena league, Penny's Pursuit) on the original device. No cloud icon exists in v13.4.1, so there is no EA-account route either. |
+| Profile resets to 0 coins/gems on an online boot on a *different* device | **Fundamental per-install identity limitation, not fixable by files.** In the guarded test, direct Wi-Fi (no VPN) caused the file to collapse within 8 seconds; logcat showed Google Play Games `SignInPerformer` / `CloudSilentSync`. The source phone's online identity is not the same as the Pad's anonymous install. First boot genuinely offline holds (verified ≥90s); keep the moved device offline. Play online on the original device, or pursue EA account linking. |
 | Game crashes on load | The save is from a newer game version. Update the game first, then retry. |
 | Progress "lost" after linking an account | Unlink / decline cloud sync; restore local save again from this repo. |
 

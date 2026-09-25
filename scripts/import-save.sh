@@ -12,10 +12,11 @@
 #   IMPORTANT:
 #     - Close the game completely on the device FIRST
 #       (Settings > Apps > com.ea.game.pvz2_na > Force stop).
-#     - CRITICAL: keep the device OFFLINE for the first launch after restore
-#       (airplane mode). Google Play Games / cloud automation resets a fresh
-#       profile to empty if the network is on at first boot.
-#       After the profile has loaded once, re-enable the network.
+#     - CRITICAL: keep the device GENUINELY OFFLINE for the first launch after
+#       restore. Disable Wi-Fi and mobile data, stop the VPN, and verify that
+#       no active network remains; airplane-mode setting alone is insufficient.
+#       Google Play Games / cloud automation resets a fresh profile to empty if
+#       the network is on at first boot. Keep the moved device offline afterward.
 #     - The device must run the same region package: com.ea.game.pvz2_na
 #       (advanced/global package com.ea.game.pvz2_row uses a different folder).
 #     - After first launch, do NOT sign into Google Play Games / Game Center
@@ -59,4 +60,5 @@ echo "==> Pushing repo snapshot (${SRC})"
 "${ADB[@]}" push "$SRC/." "$DEST/"
 
 echo "==> Done. Launch PvZ 2; you should see the restored profile."
+echo "    Keep the device genuinely offline before and after this first launch."
 echo "    Rollback: adb shell 'rm -rf '$DEST'; mv '$DEST.orig' '$DEST''"
