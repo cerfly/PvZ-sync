@@ -10,3 +10,7 @@ Thumbs.db
 # keep backups/ zip current by hand; ignore duplicates that would bloat the repo
 *.zip
 !backups/*.zip
+
+# OBB blobs are ~900 MiB and GitHub rejects any file over 100 MiB at push time.
+# Checksums are recorded in obb/OBB-CHECKSUMS.txt instead; blobs live outside the repo.
+*.obb

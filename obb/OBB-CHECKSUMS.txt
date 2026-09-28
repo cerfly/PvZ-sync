@@ -1,0 +1,41 @@
+OBB checksums — restore point record
+===================================
+
+The OBB itself is NOT stored in this repository. It is 887.5 MiB and GitHub
+rejects any file over 100 MiB at push time. Only its checksum lives here, so
+the asset can be re-verified without committing the blob.
+
+Package : com.ea.game.pvz2_na
+Version : 13.4.1  (versionCode 1055, targetSdk 36)
+APK     : sha256 772269d1040e1064f5e75df88e493cf84e1b6abbe83f95dee2ff5c1609f3975c
+          cert SHA1 12:F1:98:C1:38:45:05:B5:B2:66:01:2E:3D:F0:DC:C2:25:E9:CB:43
+          cert SHA256 5B:FF:7D:61:4E:1B:A1:1A:56:6A:BB:58:9C:86:3B:01:3F:79:AA:74:7B:D2:14:67:33:36:6C:56:25:A5:F0:D2
+          signer CN=EAM, OU=EAM, O=EAM, L=LA, ST=CA, C=US
+
+main.1055.com.ea.game.pvz2_na.obb
+---------------------------------
+size    930496512
+sha256  7d1a7850a62c1d04faadf36ce98f8483b4443ee4a74e8e7a2b66cc3884de405c
+
+On-device path (per user):
+  /storage/emulated/<userId>/Android/obb/com.ea.game.pvz2_na/main.1055.com.ea.game.pvz2_na.obb
+
+Verified copy pulled 2026-09-28 from vivo V2413, user 0, over wireless ADB
+(930496512 bytes in 309.761s). SHA-256 matched the value established during
+the earlier Pad transfer work.
+
+Local backup of the blob (outside this repo, deliberately):
+  /home/cerfly/PvZ-obb/main.1055.com.ea.game.pvz2_na.obb
+
+Notes
+-----
+* The OBB filename embeds the versionCode. Any build other than 1055 needs a
+  differently-named OBB, and a mismatch produces the in-game error
+  "Download failed because the resources could not be found".
+* Secondary Android users each need their own copy of the OBB. The adb shell
+  (uid 2000) cannot read or write /storage/emulated/<otherUserId>, so the copy
+  must be fetched by the Play Store while inside that user, or placed by a file
+  manager running as that user.
+* com.ea.game.pvz2_row is the same EA build (13.4.1 / 1055) under a different
+  package name for Rest-of-World regions. It is a DIFFERENT app: separate data
+  directory, separate OBB filename, and the save tree here does not apply to it.
